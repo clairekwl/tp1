@@ -10,12 +10,12 @@ class People(object):
         self.r = 10
         self.fill =  random.choice(["yellow","red","purple"])
         self.infectedColor = "green"
-        
         #will have scores 10, 15 in higher levels
         self.score = random.choice([5, 10])
         self.dx = random.randint(-5, 5)
         self.dy = random.randint(-5, 5)
-        self.facingDirection = None
+        #self.faceDirection = random.choice[("Up", "Down", "Left", "Right")]
+        self.infectedSneezes = []
     
     #might do score, or life bar
     def draw(self, canvas):
@@ -27,12 +27,14 @@ class People(object):
         dist = 2
         dist2 = 5
         dist3 = 6
+        
+        #if self.faceDirection == "Up":
         canvas.create_polygon(self.cx+self.r-dist, self.cy-upperArm, self.cx+
-        self.r-dist, self.cy+lowerArm, self.cx+self.r+dist2, self.cy+dist3,
-         fill=self.fill) 
+            self.r-dist, self.cy+lowerArm, self.cx+self.r+dist2, self.cy+dist3,
+            fill=self.fill) 
         canvas.create_polygon(self.cx-self.r+dist, self.cy+upperArm, self.cx-
-        self.r+dist, self.cy-lowerArm, self.cx-self.r-dist2, self.cy+dist3,
-         fill=self.fill) 
+            self.r+dist, self.cy-lowerArm, self.cx-self.r-dist2, self.cy+dist3,
+            fill=self.fill) 
          
         '''' 
         #arm status1
@@ -74,12 +76,20 @@ class People(object):
         dist = ((other.sx - self.cx)**2 + (other.sy - self.cy)**2)**0.5
         return dist <= self.r + other.sr
     
+    def collidesWithTrail(self, x, y, r):
+        dist = ((x - self.cx)**2 + (y - self.cy)**2)**0.5
+        return dist <= self.r + r
+    
     def changeColor(self):
         self.fill = self.infectedColor
     
-    def sneezee(self);
-        if 
-            
+    def infectedSneeze(self):
+        randAngle = random.uniform(0, 2*math.pi)
+        dx = math.cos(randAngle)*SneezeClass.velocity
+        dy = -math.sin(randAngle)*SneezeClass.velocity
+        
+        if self.fill == self.infectedColor:
+            self.infectedSneezes.append(Sneeze(self.cx,self.cy,(dx,dy)))
     
 class MainPerson(object):
     def __init__(self, data):
@@ -185,10 +195,6 @@ class MainPerson(object):
             xDir = math.cos(rightAngle)*SneezeClass.velocity
             yDir = -math.sin(rightAngle)*SneezeClass.velocity
             self.sneezes.append(Sneeze(self.mx,self.my,(xDir,yDir)))
-    
-    def moveSneeze(self):
-        for sneeze in self.sneezes:
-            sneeze.move()
         
 #actually draw the sneeze based on changing direction and time    
 class Sneeze(object):
@@ -202,17 +208,17 @@ class Sneeze(object):
         
     def drawTrail(self,canvas):
         r = self.sr
-        for location in self.prevLocation:
-            x = location[0]
-            y = location[1]
-            if r <= 7:
+        for i in range(len(self.prevLocation)):
+            x = self.prevLocation[i][0]
+            y = self.prevLocation[i][1]
+            if r <= 8.1:
                 r += 0.25
                 canvas.create_oval(x-r, y-r, x+r, y+r, fill="green", width=0)
-            
+            self.prevLocation[i] = (x,y,r)
+        
     def move(self):
-        if self.velocity > 0:
-            self.sx += self.direction[0]/10 * self.velocity
-            self.sy += self.direction[1]/10 * self.velocity
+        self.sx += self.direction[0]/10 * self.velocity
+        self.sy += self.direction[1]/10 * self.velocity
 
 ####################################
 #customize these functions
@@ -221,9 +227,6 @@ class Sneeze(object):
 def init(data):
     data.people = [People(data) for i in range(30)]
     data.sneezeDirection = None
-    
-    #sneezes of random pp
-    #data.allSneezes = 
     
     #main person init
     data.mainMove = 6
@@ -235,7 +238,6 @@ def init(data):
 def mousePressed(event, data):
     pass
 
-#check moving within window
 def keyPressed(event, data):
     if event.keysym == "Up":
         data.mainPerson.my -= data.mainMove 
@@ -269,27 +271,51 @@ def timerFired(data):
         #checking people-sneeze collision
         for sneeze in data.mainPerson.sneezes:
             if people.collidesWithSneeze(sneeze):
-                if people.score == 0:
+                if people.score == 5:
+                    people.score = 0
                     people.dx = 0
                     people.dy = 0
                     people.changeColor()
-                else:
-                    people.score -= 5
-                #release sneeze
-        #for sneeze 
+                elif people.score > 5:
+                        people.score -= 5
+            #moreSneeze is a tuple of locations
+            #checking people-trail collision
+            for moreSneeze in sneeze.prevLocation:
+                x, y, r = moreSneeze
+                if people.collidesWithTrail(x,y,r):
+                    if people.score == 5:
+                        people.score = 0
+                        people.dx = 0
+                        people.dy = 0
+                        people.changeColor()
+                    elif people.score > 5:
+                            people.score -= 5
         
+    #main person sneeze   
     for sneeze in data.mainPerson.sneezes:
         if sneeze.velocity <= 0:
             continue
         #a list of tuples containing previous locations
         sneeze.prevLocation.append((sneeze.sx,sneeze.sy))
         sneeze.move()
+        sneeze.velocity -= 0.6
+    
+    
+    #infected people sneezes
+    for sneeze in data.people.infectedSneezes:
+        if sneeze.velocity <= 0:
+            continue
+        sneeze.prevLocation.append((sneeze.cx,sneeze.cy))
+        sneeze.move()
         sneeze.velocity -= 0.5
+    
 
     #checking people collision
     for (i,people) in enumerate(data.people):
         for rest in data.people[i+1:]: 
-            if people.collidesWithPeople(rest):
+            if people.collidesWithPeople(rest) and people.fill != "green":
+                people.cx -= people.r #move out of collision radius
+                people.cy -= people.r
                 people.dx = -people.dx 
                 people.dy = -people.dy
                 rest.dy = -rest.dy 
@@ -301,8 +327,9 @@ def redrawAll(canvas, data):
     
     for people in data.people:
         people.draw(canvas)
-        if people.fill == "green":
-            people.drawTrail(canvas)
+       # if people.fill == "green":
+         #   for sneeze in data.people.infectedSneezes:
+         #       sneeze.drawTrail(canvas)
     
     for sneeze in data.mainPerson.sneezes:
         sneeze.drawTrail(canvas)
@@ -357,4 +384,4 @@ def run(width=300, height=300):
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-run(700, 500)
+run(600, 500)
