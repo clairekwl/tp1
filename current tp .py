@@ -31,12 +31,13 @@ class People(object):
         self.infectedColor = "green"
         self.isInfected = False
         
+        self.timer = random.randint(8, 20)
         #will have scores 10, 15 in higher levels
         self.score = random.choice([5, 10])
         self.dx = random.randint(-5, 5)
         self.dy = random.randint(-5, 5)
+        self.sneezed = False
         
-        #self.faceDirection = random.choice[("Up", "Down", "Left", "Right")]
         self.infectedSneezes = []
     
     #might do score, or life bar
@@ -112,6 +113,22 @@ class People(object):
     def collidesWithTrail(self, x, y, r):
         dist = ((x - self.cx)**2 + (y - self.cy)**2)**0.5
         return dist <= self.r + r
+ 
+    def changeColor(self):
+        self.fill = self.infectedColor
+    
+    def infectedSneeze(self):
+        SneezeClass = Sneeze(-5,-5,(0,0))
+        randAngle = random.uniform(0, 2*math.pi)
+        dx = math.cos(randAngle)*SneezeClass.velocity
+        dy = -math.sin(randAngle)*SneezeClass.velocity
+        
+        if self.isInfected and not self.sneezed and self.timer<=0:
+            self.infectedSneezes.append(Sneeze(self.cx,self.cy,(dx,dy)))
+            self.sneezed = True
+'''
+    def isInsideStage(self, x, y, r):
+        
     
     def collideWithStageTop(self, x, y, r):
         return (self.cx+self.r > 200 and self.cx+self.r < 400 and self.cy+self.r
@@ -128,19 +145,7 @@ class People(object):
     def collideWithStageTop(self, x, y, r):
         return (self.cx+self.r > 200 and self.cx+self.r < 400 and self.cy+self.r < 
         140 and self.cy+self.r > 40)           
-
-    def changeColor(self):
-        self.fill = self.infectedColor
-    
-    def infectedSneeze(self):
-        SneezeClass = Sneeze(-5,-5,(0,0))
-        randAngle = random.uniform(0, 2*math.pi)
-        dx = math.cos(randAngle)*SneezeClass.velocity
-        dy = -math.sin(randAngle)*SneezeClass.velocity
-        
-        if self.isInfected:
-            self.infectedSneezes.append(Sneeze(self.cx,self.cy,(dx,dy)))
-    
+'''   
     
 class MainPerson(object):
     def __init__(self, data):
@@ -309,6 +314,9 @@ def init(data):
     #other pages
     data.mode = "homeScreen"
     
+    #count number of key presses
+    data.count = 0
+    
 def mousePressed(event, data):
     if (data.mode == "homeScreen"): 
         homeScreenMousePressed(event, data)
@@ -363,7 +371,7 @@ def homeScreenTimerFired(data):
 def homeScreenRedrawAll(canvas, data):
     canvas.create_rectangle(0, 0, data.width, data.height, fill="green4")
     canvas.create_text(data.width/2, data.height/2-60,
-                       text="ACHOOOO", font="Arial 26 bold")
+                       text="ACHOOOO (will import graphics and gradient)", font="Arial 26 bold")
     canvas.create_text(data.width/2, data.height/2+50,
                         tex="Play Game", font="Arial 22 bold" )
     canvas.create_text(data.width/2, data.height/2+100,
@@ -427,38 +435,39 @@ def playGameKeyPressed(event, data):
         data.mainPerson.sneeze()
 
 def playGameTimerFired(data):    
-    for people in data.people:
-        people.move(data)
-        
+    for person in data.people:
+        person.move(data)
+        '''
         #collision with stage
         if collideWithStageTop(people.cx,people.cy,people.r):
         elif collideWithStageTop(people.cx,people.cy,people.r):
         elif collideWithStageTop(people.cx,people.cy,people.r):
         elif collideWithStageTop(people.cx,people.cy,people.r):
-            
+        '''    
         #checking people-sneeze collision
         for sneeze in data.mainPerson.sneezes:
-            if people.collidesWithSneeze(sneeze):
-                if people.score == 5 and sneeze.velocity != 0:
-                    people.score = 0
-                    people.dx = 0
-                    people.dy = 0
-                    people.changeColor()
-                    people.isInfected = True
-                    people.infectedSneeze() #must call the infected func
-                elif people.score > 5:
-                    people.score -= 5
+            if person.collidesWithSneeze(sneeze):
+                if person.score == 5:
+                    person.score = 0
+                    person.dx = person.dy = 0
+                    person.changeColor()
+                    person.isInfected = True
+                    person.infectedSneeze() #must call the infected func
+                elif person.score > 5:
+                    person.score -= 5
             #moreSneeze is a tuple of locations
             #checking people-trail collision
             for moreSneeze in sneeze.prevLocation:
+                # print(moreSneeze,"main")
                 x, y, r = moreSneeze
-                if people.collidesWithTrail(x,y,r):
-                    if people.score == 5 and sneeze.velocity != 0:
-                        people.score = 0
-                        people.changeColor()
-                        people.isInfected = True
-                    elif people.score > 5 and people.score != 0:
-                        people.score -= 5
+                if person.collidesWithTrail(x,y,r):
+                    if person.score == 5:
+                        person.score = 0
+                        person.changeColor()
+                        person.isInfected = True
+                        person.infectedSneeze()
+                    elif person.score > 5 and person.score != 0:
+                        person.score -= 5
         
     #main person sneeze   
     for sneeze in data.mainPerson.sneezes:
@@ -471,8 +480,30 @@ def playGameTimerFired(data):
     
     
     #infected people sneezes
-    for person in data.people:
+    for (i,person) in enumerate(data.people):
         for sneeze in person.infectedSneezes:
+            for rest in data.people:  
+                if rest.collidesWithSneeze(sneeze):
+                    if rest.score <= 5:
+                        rest.score = 0
+                        rest.dx = rest.dy = 0
+                        rest.changeColor()
+                        rest.isInfected = True
+                        rest.infectedSneeze() #must call the infected func
+                    elif rest.score > 5:
+                        rest.score -= 5   
+                #checking other people collsion with random sneeze trail
+                for moreSneeze in sneeze.prevLocation:
+                    x, y, r = moreSneeze
+                    if rest.collidesWithTrail(x,y,r):
+                        if rest.score <= 5:
+                            rest.score = 0
+                            rest.changeColor()
+                            rest.isInfected = True
+                            rest.infectedSneeze()
+                        elif rest.score > 5 and rest.score != 0:
+                            rest.score -= 5
+                        
             if sneeze.velocity <= 0:
                 continue
             sneeze.prevLocation.append((sneeze.sx,sneeze.sy))
@@ -480,15 +511,22 @@ def playGameTimerFired(data):
             sneeze.velocity -= 0.5
 
     #checking people collision
-    for (i,people) in enumerate(data.people):
+    for (i,person) in enumerate(data.people):
         for rest in data.people[i+1:]: 
-            if people.collidesWithPeople(rest) and people.fill != "green":
-                people.cx -= people.r #move out of collision radius
-                people.cy -= people.r
-                people.dx = -people.dx 
-                people.dy = -people.dy
+            if person.collidesWithPeople(rest) and person.fill != "green":
+                person.cx -= person.r #move out of collision radius
+                person.cy -= person.r
+                person.dx = -person.dx 
+                person.dy = -person.dy
                 rest.dy = -rest.dy 
                 rest.dx = -rest.dx
+    
+    #randomizing sneeze time
+    for person in data.people:
+        if person.isInfected and person.timer > 0:
+            person.timer -= 1
+        if person.isInfected and person.timer <= 0 and not person.sneezed:
+            person.infectedSneeze() #method changes sneezed status to true
 
 def playGameRedrawAll(canvas, data):
     #backdrop
@@ -497,8 +535,9 @@ def playGameRedrawAll(canvas, data):
     for person in data.people:
         person.draw(canvas)
         for sneeze in person.infectedSneezes:
-            sneeze.drawTrail(canvas) 
-    
+            sneeze.drawTrail(canvas)
+
+            
     for sneeze in data.mainPerson.sneezes:
         sneeze.drawTrail(canvas)
     
@@ -511,12 +550,7 @@ def playGameRedrawAll(canvas, data):
 ####################################
 
 def run(width=300, height=300):
-    def redrawAllWrapper(canvas, data):
-        canvas.delete(ALL)
-        canvas.create_rectangle(0, 0, data.width, data.height,
-                                fill='white', width=0)
-        redrawAll(canvas, data)
-        canvas.update()    
+     
 
     def mousePressedWrapper(event, canvas, data):
         mousePressed(event, data)
@@ -531,6 +565,12 @@ def run(width=300, height=300):
         redrawAllWrapper(canvas, data)
         # pause, then call timerFired again
         canvas.after(data.timerDelay, timerFiredWrapper, canvas, data)
+    def redrawAllWrapper(canvas, data):
+        canvas.delete(ALL)
+        canvas.create_rectangle(0, 0, data.width, data.height,
+                                fill='white', width=0)
+        redrawAll(canvas, data)
+        canvas.update()   
     # Set up data and call init
     class Struct(object): pass
     data = Struct()
