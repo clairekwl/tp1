@@ -39,6 +39,7 @@ class People(object):
         self.sneezed = False
         
         self.infectedSneezes = []
+        self.infectedPeople = 0
     
     #might do score, or life bar
     def draw(self, canvas):
@@ -116,6 +117,7 @@ class People(object):
  
     def changeColor(self):
         self.fill = self.infectedColor
+        #self.infectedPeople += 1
     
     def infectedSneeze(self):
         SneezeClass = Sneeze(-5,-5,(0,0))
@@ -315,7 +317,10 @@ def init(data):
     data.mode = "homeScreen"
     
     #count number of key presses
-    data.count = 0
+    data.spacePressed = 0
+    
+    #number of infected people
+    data.infectedPeople = 0
     
 def mousePressed(event, data):
     if (data.mode == "homeScreen"): 
@@ -324,6 +329,8 @@ def mousePressed(event, data):
         playGameMousePressed(event, data)
     elif (data.mode == "help"): 
         helpMousePressed(event, data)
+    elif (data.mode == "goal1"): 
+        goal1MousePressed(event, data)    
 
 def keyPressed(event, data):
     #turning pages
@@ -333,6 +340,8 @@ def keyPressed(event, data):
         playGameKeyPressed(event, data)
     elif (data.mode == "help"): 
         helpKeyPressed(event, data)
+    elif (data.mode == "goal1"): 
+        goal1KeyPressed(event, data)
 
 def timerFired(data):
     #turning pages
@@ -342,6 +351,8 @@ def timerFired(data):
         playGameTimerFired(data)
     elif (data.mode == "help"):       
         helpTimerFired(data)
+    elif (data.mode == "goal1"): 
+        goal1TimerFired(data)
     
 def redrawAll(canvas, data):
     #turning pages
@@ -351,6 +362,33 @@ def redrawAll(canvas, data):
         playGameRedrawAll(canvas, data)
     elif (data.mode == "help"):      
         helpRedrawAll(canvas, data)
+    elif (data.mode == "goal1"): 
+        goal1RedrawAll(canvas, data)
+
+####################################
+# goal1 mode
+####################################
+
+def goal1MousePressed(event, data):
+    if event.x > 200 and event.x < 400 and event.y < 420 and event.y > 380:
+        data.mode = "playGame"
+
+def goal1KeyPressed(event, data):
+    pass
+
+def goal1TimerFired(data):
+    pass
+
+def goal1RedrawAll(canvas, data):
+    canvas.create_rectangle(0,0,600,500,outline="black", fill="salmon2", 
+    width=2, stipple="gray50")
+    canvas.create_rectangle(100,200,500,350,fill="gray90")
+    canvas.create_text(300,250,text="Your goal is to infect 70% of the",font="Arial 26")
+    canvas.create_text(300,300,text=" of the people at (_____) concert",
+    font="Arial 26")
+    canvas.create_rectangle(200,380,400,420,fill="gray90")
+    canvas.create_text(300,400,text="Continue",font="Arial 26")
+
 
 ####################################
 # homeScreen mode
@@ -358,7 +396,7 @@ def redrawAll(canvas, data):
 
 def homeScreenMousePressed(event, data):
     if event.x > 250 and event.x < 350 and event.y < 320 and event.y > 270:
-        data.mode = "playGame"
+        data.mode = "goal1"
     elif event.x > 250 and event.x < 350 and event.y < 400 and event.y > 350:
         data.mode = "help"
 
@@ -391,12 +429,11 @@ def helpTimerFired(data):
     pass
 
 def helpRedrawAll(canvas, data):
+    #REMEMBER TO SAY THAT PEOPLE WILL BE EXITING SO U CANT TAKE FOREVER TO MOVE MAIN PERSON
     canvas.create_text(data.width/2, data.height/2-40,
                        text="This is help mode!", font="Arial 26 bold")
     canvas.create_text(data.width/2, data.height/2-10,
                        text="How to play:", font="Arial 20")
-    canvas.create_text(data.width/2, data.height/2+15,
-                       text="Do nothing and score points!", font="Arial 20")
     canvas.create_text(data.width/2, data.height/2+40,
                        text="Press any key to keep playing!", font="Arial 20")
 
@@ -408,31 +445,33 @@ def playGameMousePressed(event, data):
     data.score = 0
 
 def playGameKeyPressed(event, data):
-    if event.keysym == "Up":
-        data.mainPerson.my -= data.mainMove 
-        data.mainPerson.facingDirection = "Up"
+    if data.spacePressed == 0:
+        if event.keysym == "Up":
+            data.mainPerson.my -= data.mainMove 
+            data.mainPerson.facingDirection = "Up"
+            
+        elif event.keysym == "Down":
+            data.mainPerson.my += data.mainMove
+            data.mainPerson.facingDirection = "Down"
+            
+        elif event.keysym == "Left":
+            data.mainPerson.mx -= data.mainMove
+            data.mainPerson.facingDirection = "Left"
+            
+        elif event.keysym == "Right":
+            data.mainPerson.mx += data.mainMove
+            data.mainPerson.facingDirection = "Right"
         
-    elif event.keysym == "Down":
-        data.mainPerson.my += data.mainMove
-        data.mainPerson.facingDirection = "Down"
-        
-    elif event.keysym == "Left":
-        data.mainPerson.mx -= data.mainMove
-        data.mainPerson.facingDirection = "Left"
-        
-    elif event.keysym == "Right":
-        data.mainPerson.mx += data.mainMove
-        data.mainPerson.facingDirection = "Right"
-        
-    elif event.keysym == "space":
-        #produce seven rays of sneeze
-        data.mainPerson.sneeze()
-        data.mainPerson.sneeze()
-        data.mainPerson.sneeze()
-        data.mainPerson.sneeze()
-        data.mainPerson.sneeze()
-        data.mainPerson.sneeze()
-        data.mainPerson.sneeze()
+        elif event.keysym == "space":
+            data.spacePressed += 1
+            #produce seven rays of sneeze
+            data.mainPerson.sneeze()
+            data.mainPerson.sneeze()
+            data.mainPerson.sneeze()
+            data.mainPerson.sneeze()
+            data.mainPerson.sneeze()
+            data.mainPerson.sneeze()
+            data.mainPerson.sneeze()
 
 def playGameTimerFired(data):    
     for person in data.people:
@@ -452,6 +491,7 @@ def playGameTimerFired(data):
                     person.dx = person.dy = 0
                     person.changeColor()
                     person.isInfected = True
+                    data.infectedPeople += 1
                     person.infectedSneeze() #must call the infected func
                 elif person.score > 5:
                     person.score -= 5
@@ -465,6 +505,7 @@ def playGameTimerFired(data):
                         person.score = 0
                         person.changeColor()
                         person.isInfected = True
+                        data.infectedPeople += 1
                         person.infectedSneeze()
                     elif person.score > 5 and person.score != 0:
                         person.score -= 5
@@ -477,10 +518,16 @@ def playGameTimerFired(data):
         sneeze.prevLocation.append((sneeze.sx,sneeze.sy))
         sneeze.move()
         sneeze.velocity -= 0.6    
-    
+
+    #randomizing sneeze time
+    for person in data.people:
+        if person.isInfected and person.timer > 0:
+            person.timer -= 1
+        if person.isInfected and person.timer <= 0 and not person.sneezed:
+            person.infectedSneeze() #method changes sneezed status to true    
     
     #infected people sneezes
-    for (i,person) in enumerate(data.people):
+    for person in data.people:
         for sneeze in person.infectedSneezes:
             for rest in data.people:  
                 if rest.collidesWithSneeze(sneeze):
@@ -489,6 +536,7 @@ def playGameTimerFired(data):
                         rest.dx = rest.dy = 0
                         rest.changeColor()
                         rest.isInfected = True
+                        data.infectedPeople += 1
                         rest.infectedSneeze() #must call the infected func
                     elif rest.score > 5:
                         rest.score -= 5   
@@ -500,6 +548,7 @@ def playGameTimerFired(data):
                             rest.score = 0
                             rest.changeColor()
                             rest.isInfected = True
+                            data.infectedPeople += 1
                             rest.infectedSneeze()
                         elif rest.score > 5 and rest.score != 0:
                             rest.score -= 5
@@ -521,13 +570,6 @@ def playGameTimerFired(data):
                 rest.dy = -rest.dy 
                 rest.dx = -rest.dx
     
-    #randomizing sneeze time
-    for person in data.people:
-        if person.isInfected and person.timer > 0:
-            person.timer -= 1
-        if person.isInfected and person.timer <= 0 and not person.sneezed:
-            person.infectedSneeze() #method changes sneezed status to true
-
 def playGameRedrawAll(canvas, data):
     #backdrop
     canvas.create_rectangle(0, 0, 600, 500, fill="salmon2")
@@ -543,14 +585,16 @@ def playGameRedrawAll(canvas, data):
     
     data.mainPerson.drawMain(canvas)
     
+    #level1
     Level1Background().drawBackground1(canvas)
+    canvas.create_text(430, 10, text="Infected Percentage:" +
+     str(round(data.infectedPeople/30)) + "%")
 
 ####################################
 # use the run function as-is
 ####################################
 
-def run(width=300, height=300):
-     
+def run(width=300, height=300):     
 
     def mousePressedWrapper(event, canvas, data):
         mousePressed(event, data)
