@@ -33,12 +33,10 @@ class People(object):
         self.score = random.choice([25,50,75,100])
         self.dx = random.choice([-1, 1])
         self.dy = random.choice([-1, 1])
+        
         self.sneezed = False
-        #self.inGreenZone = False
-                
         self.infectedSneezes = []
         self.infectedPeople = 0
-        
         self.armStatus = 0
     
     #arm status1
@@ -72,22 +70,6 @@ class People(object):
             canvas.create_polygon(self.cx-self.r+dist, self.cy+upperArm, self.cx-
             self.r+dist, self.cy-lowerArm, self.cx-self.r-dist2, self.cy-dist3,
             fill=self.fill)  
-        '''
-        elif self.armStatus == 2:
-            canvas.create_oval(self.cx-self.r, self.cy-self.r, self.cx+self.r,
-            self.cy+self.r, fill=self.fill, width=0)
-            
-            upperArm = lowerArm = 4
-            dist = 2
-            dist2 = 5
-            dist3 = 6
-            canvas.create_polygon(self.cx+self.r-dist, self.cy-upperArm, self.cx+
-            self.r-dist, self.cy+lowerArm, self.cx+self.r+dist2, self.cy+dist3,
-            fill=self.fill) 
-            canvas.create_polygon(self.cx-self.r+dist, self.cy+upperArm, self.cx-
-            self.r+dist, self.cy-lowerArm, self.cx-self.r-dist2, self.cy+dist3,
-            fill=self.fill) 
-            ''' 
     
     def drawScore(self, canvas):
         canvas.create_text(self.cx, self.cy-13, text=str(self.score), font = 
@@ -97,22 +79,22 @@ class People(object):
         #varying speeds for different ages
         if self.fill == "purple":
             if self.dx == -1:
-                self.dx -= 4
+                self.dx -= 3.5
             elif self.dx == 1:
-                self.dx += 4
+                self.dx += 3.5
             if self.dy == -1:
-                self.dy -= 4
+                self.dy -= 3.5
             elif self.dy == 1:
-                self.dy += 4
+                self.dy += 3.5
         elif self.fill == "red":
             if self.dx == -1:
-                self.dx -= -2
+                self.dx -= -1.7
             elif self.dx == 1:
-                self.dx += 2
+                self.dx += 1.7
             if self.dy == -1:
-                self.dy -= 2
+                self.dy -= 1.7
             elif self.dy == 1:
-                self.dy += 2
+                self.dy += 1.7
                 
         self.cx += self.dx
         self.cy += self.dy 
@@ -207,7 +189,6 @@ class MainPerson(object):
         dist = 2
         dist2 = 5
         dist3 = 6
-        
         if self.facingDirection == "Up":
             canvas.create_oval(self.mx-self.mr/2, self.my-self.mr-self.faceInt,
              self.mx+self.mr/2, self.my-self.mr/2+self.faceInt, fill="white",
@@ -352,7 +333,7 @@ def init(data):
     data.mode = "homeScreen"
     data.spacePressed = 0
     data.countDownLevel1 = 20
-    data.timer = 0
+    data.timerr = 0
     data.infectedPeople = 0
     data.isGameOver = False
     
@@ -508,8 +489,8 @@ def playGameKeyPressed(event, data):
             data.mainPerson.sneeze()
 
 def playGameTimerFired(data): 
-    data.timer += 1
-    if data.timer%10 == 0 and data.countDownLevel1 != 0:
+    data.timerr += 1
+    if data.timerr%10 == 0 and data.countDownLevel1 != 0:
         data.countDownLevel1 -= 1
         if data.countDownLevel1 == 0:
             data.isGameOver == True
@@ -519,17 +500,17 @@ def playGameTimerFired(data):
     for person in data.people:
         #changing arms (purple young walk fastest, red middle, yellow slowest)
         if person.fill == "purple":
-            if data.timer%8==0 :
+            if data.timerr%8==0 :
                 person.armStatus+=1
                 person.armStatus=person.armStatus%2
         
         if person.fill == "red":
-            if data.timer%13==0:
+            if data.timerr%13==0:
                 person.armStatus+=1
                 person.armStatus=person.armStatus%2
         
         if person.fill == "yellow":
-            if data.timer%19==0:
+            if data.timerr%19==0:
                 person.armStatus+=1
                 person.armStatus=person.armStatus%2
 
@@ -547,27 +528,34 @@ def playGameTimerFired(data):
             if person.collidesWithSneeze(sneeze):
                 if person.score == 25:
                     person.score = 0
-                    person.dx = person.dy = 0
                     person.changeColor()
                     person.isInfected = True
                     data.infectedPeople += 1
                     person.infectedSneeze() #must call the infected func
-                elif person.inGreenZone and person.score != 0:
-                    person.score -= 25
+                elif person.score == 50:
+                    person.score = 25
+                elif person.score == 75:
+                    person.score = 50
+                elif person.score == 100:
+                    person.score = 75
            
         #checking people-trail collision
         for sneeze in data.mainPerson.sneezes:
             for moreSneeze in sneeze.prevLocation:
                 x, y, r = moreSneeze
                 if person.collidesWithTrail(x,y,r):
-                    if person.score == 20:
+                    if person.score == 25:
                         person.score = 0
                         person.changeColor()
                         person.isInfected = True
                         data.infectedPeople += 1
                         person.infectedSneeze()
-                    elif person.score != 20 and person.score != 0:
-                        person.score -= 20
+                    elif person.score == 50:
+                        person.score = 25
+                    elif person.score == 75:
+                        person.score = 50
+                    elif person.score == 100:
+                        person.score = 75
         
     #main person sneeze   
     for sneeze in data.mainPerson.sneezes:
@@ -583,22 +571,26 @@ def playGameTimerFired(data):
         if person.isInfected and person.timer > 0:
             person.timer -= 1
         if person.isInfected and person.timer <= 0 and not person.sneezed:
-            person.infectedSneeze() #method changes sneezed status to true    
+            person.infectedSneeze() #method changes sneezed status to true
+            person.dx = person.dy = 0    
     
     #infected people sneezes
     for person in data.people:
         for sneeze in person.infectedSneezes:
             for rest in data.people:  
                 if rest.collidesWithSneeze(sneeze):
-                    if rest.score <= 5:
+                    if rest.score == 25:
                         rest.score = 0
-                        rest.dx = rest.dy = 0
                         rest.changeColor()
                         rest.isInfected = True
                         data.infectedPeople += 1
                         rest.infectedSneeze() #must call the infected func
-                    elif rest.score > 5:
-                        rest.score -= 5   
+                    elif rest.score == 50:
+                        rest.score = 25
+                    elif rest.score == 75:
+                        rest.score = 50
+                    elif rest.score == 100:
+                        rest.score = 75 
                         
     #checking other people collsion with random sneeze trail
     for person in data.people:
@@ -608,14 +600,18 @@ def playGameTimerFired(data):
                     x, y, r = moreSneeze
                     if rest.collidesWithTrail(x,y,r):
                         rest.inGreenZone = True 
-                        if rest.score <= 5:
+                        if rest.score == 25:
                             rest.score = 0
                             rest.changeColor()
                             rest.isInfected = True
                             data.infectedPeople += 1
                             rest.infectedSneeze()
-                        elif rest.score > 5 and rest.score != 0:
-                            rest.score -= 5
+                        elif rest.score == 50:
+                            rest.score = 25
+                        elif rest.score == 75:
+                            rest.score = 50
+                        elif rest.score == 100:
+                            rest.score = 75
                         
             if sneeze.velocity <= 0:
                 continue
@@ -633,7 +629,6 @@ def playGameTimerFired(data):
                 person.dy = -person.dy
                 rest.dy = -rest.dy 
                 rest.dx = -rest.dx
-                
                 
 def playGameRedrawAll(canvas, data):
     #backdrop
