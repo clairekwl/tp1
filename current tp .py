@@ -505,7 +505,7 @@ def helpRedrawAll(canvas, data):
     canvas.create_text(100,326, text="population.")
     canvas.create_text(174,355, text="Factors that you want to consider:")
     canvas.create_text(170,375, text="1. Ages of nearby targets")
-    canvas.create_text(170,390, text="2. Where in the concert hall")
+    canvas.create_text(170,390, text="2. Interactions between people")
     canvas.create_text(170,414, text="*Some people might exit, so you")
     canvas.create_text(170,429, text="are losing people with time!")
     
@@ -553,7 +553,15 @@ def helpRedrawAll(canvas, data):
     canvas.create_text(430,250, text="slowly.")
     canvas.create_text(430,265, text="5 points", font='Arial 14 bold')
     
-    canvas.create_text(339,290, text="Scoring:", font="Arial 16 bold")
+    canvas.create_text(340,290, text="Scoring:", font="Arial 16 bold")
+    canvas.create_text(426,308, text="The game ends when timer hits 0.")
+    canvas.create_text(408,323, text="For each person you infect,")
+    canvas.create_text(414,338, text="you obtain the corresponding")
+    canvas.create_text(376,353, text="number of points.")
+    
+    #button
+    canvas.create_rectangle(430,414,530,450, fill="cornsilk3", width=0)
+    canvas.create_text(480,430, text="Click to Play")
 
 ####################################
 # playGame LEVEL1 mode
