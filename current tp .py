@@ -6,10 +6,10 @@ def distance(x1, y1, x2, y2):
     return ((x2-x1)**2+(y2-y1)**2)**(1/2)
 
 def isInsideStage(x, y, r):
-    return (x+r<=400 and x-r>=200 and y+r<=240 and y-r>=140) 
+    return (x+r<=401 and x-r>=199 and y+r<=241 and y-r>=139) 
 
 def isInsideRealm(x, y, r):
-    return (x+r<=450 and x-r>=150 and y+r<=290 and y-r>=90) 
+    return (x+r<=420 and x-r>=190 and y+r<=260 and y-r>=120) 
         
 ############
 #classes
@@ -383,7 +383,7 @@ def reportResultRedrawAll(canvas, data):
     fill3 = "springGreen4"
     
     canvas.create_rectangle(0,0,600,500, fill=fill1, width=0)
-    if (data.finalInfectedPeople/30)*100 > 50:
+    if (data.finalInfectedPeople/30)*100 > 70:
         canvas.create_text(300,145, text="You've infected " +
         str(round((data.finalInfectedPeople/30)*100)) + " % of the people! :)", 
         font="Arial 26", fill=fill3)
@@ -420,7 +420,7 @@ def goal1RedrawAll(canvas, data):
     canvas.create_rectangle(0,0,600,500,outline="black", fill="PeachPuff2", 
     width=2)
     canvas.create_rectangle(100,150,500,300,fill="gray90", outline=fill1)
-    canvas.create_text(300,200,text="Your goal is to infect 50% of the",font=
+    canvas.create_text(300,200,text="Your goal is to infect 70% of the",font=
     "Arial 26", fill=fill1)
     canvas.create_text(300,250,text=" of the people at the concert",
     font="Arial 26", fill=fill1)
@@ -599,6 +599,12 @@ def playGameKeyPressed(event, data):
             data.mainPerson.sneeze()
 
 def playGameTimerFired(data): 
+    #gather around stage
+    for person in data.people:
+        if (isInsideRealm(person.cx, person.cy, person.r) and not isInsideStage(
+        person.cx, person.cy, person.r)):
+            person.dx = person.dy = 0.1
+    
     data.timerr += 1
     if data.timerr%10 == 0 and data.countDownLevel1 != 0:
         data.countDownLevel1 -= 1
