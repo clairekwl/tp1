@@ -482,7 +482,7 @@ def helpRedrawAll(canvas, data):
     canvas.create_rectangle(0,0,data.width,data.height, fill="cornsilk4")
     canvas.create_text(90,25, text="Just Sneeeze", fill="green yellow", 
     font="Arial 26")
-    canvas.create_rectangle(50,50,550,460, fill="cornsilk2")
+    canvas.create_rectangle(48,50,550,460, fill="cornsilk2")
     canvas.create_line(300,50,300,460, width=0.5)
     #left side
     canvas.create_text(74,64, text="Goal:", font="Arial 16 bold")
@@ -499,17 +499,61 @@ def helpRedrawAll(canvas, data):
     canvas.create_rectangle(84,228,272,258, fill="cornsilk3", width=0)
     canvas.create_text(170,243, text="Space", fill="dim gray")
     
-    canvas.create_text(88,280, text="Scoring:", font="Arial 16 bold")
-    canvas.create_text(178,298, text="Choose where you sneeze carefully.")
+    canvas.create_text(89,280, text="Strategy:", font="Arial 16 bold")
+    canvas.create_text(178,298, text="Choose when you sneeze carefully.")
     canvas.create_text(172,312, text="You want to maxmize the affected")
     canvas.create_text(100,326, text="population.")
-    canvas.create_text(168,350, text="Factors that you might consider:")
-    canvas.create_text(170,
-    canvas.create_text(
-    canvas.create_text(
-    canvas.create_text(
-    #right side
+    canvas.create_text(174,355, text="Factors that you want to consider:")
+    canvas.create_text(170,375, text="1. Ages of nearby targets")
+    canvas.create_text(170,390, text="2. Where in the concert hall")
+    canvas.create_text(170,414, text="*Some people might exit, so you")
+    canvas.create_text(170,429, text="are losing people with time!")
     
+    #right side
+    canvas.create_text(369,64, text="Types of People:", font="Arial 16 bold")
+    
+    cx = 320
+    r = 10
+    cy = 90
+    canvas.create_oval(cx-r, cy-r, cx+r, cy+r, fill="purple", width=0)
+    upperArm = lowerArm = 5
+    dist = 2
+    dist2 = 3
+    dist3 = 7
+    canvas.create_polygon(cx+r-dist, cy-upperArm, cx+r-dist, cy+lowerArm, 
+    cx+r+dist2, cy+dist3,fill="purple") 
+    canvas.create_polygon(cx-r+dist, cy+upperArm, cx-r+dist, cy-lowerArm, cx-r-
+    dist2, cy+dist3,fill="purple")
+    
+    cx1 = 320
+    cy1 = 150
+    canvas.create_oval(cx1-r, cy1-r, cx1+r, cy1+r, fill="red", width=0)
+    canvas.create_polygon(cx1+r-dist, cy1-upperArm, cx1+r-dist, cy1+lowerArm, 
+    cx1+r+dist2, cy1+dist3,fill="red") 
+    canvas.create_polygon(cx1-r+dist, cy1+upperArm, cx1-r+dist, cy1-lowerArm, 
+    cx1-r-dist2, cy1+dist3,fill="red")
+    
+    cx2 = 320
+    cy2 = 220
+    canvas.create_oval(cx2-r, cy2-r, cx2+r, cy2+r, fill="yellow", width=0)
+    canvas.create_polygon(cx2+r-dist, cy2-upperArm, cx2+r-dist, cy2+lowerArm, 
+    cx2+r+dist2, cy2+dist3,fill="yellow") 
+    canvas.create_polygon(cx2-r+dist, cy2+upperArm, cx2-r+dist, cy2-lowerArm,
+    cx2-r-dist2, cy2+dist3,fill="yellow")
+    
+    canvas.create_text(430,90, text="Kids: Hard to infect because")
+    canvas.create_text(430,105, text="moves around the most quickly.")
+    canvas.create_text(430,122, text="15 points", font='Arial 14 bold')
+    canvas.create_text(430,150, text="Adults: Not as hard to infect")
+    canvas.create_text(430,165, text="because they move around at ")
+    canvas.create_text(430,180, text="average speed.")
+    canvas.create_text(430,195, text="10 points", font='Arial 14 bold')
+    canvas.create_text(430,220, text="Seniors: Very easy to infect")
+    canvas.create_text(432,235, text="because they move around super ")
+    canvas.create_text(430,250, text="slowly.")
+    canvas.create_text(430,265, text="5 points", font='Arial 14 bold')
+    
+    canvas.create_text(339,290, text="Scoring:", font="Arial 16 bold")
 
 ####################################
 # playGame LEVEL1 mode
