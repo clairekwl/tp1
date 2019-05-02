@@ -8,17 +8,6 @@ def distance(x1, y1, x2, y2):
 ############
 #importing background images
 ############ 
-'''
-from PIL import ImageTk,Image  
-import Image
-root = Tk()  
-canvas = Canvas(root, width = 300, height = 300)  
-canvas.pack()  
-img = ImageTk.PhotoImage(Image.open("ball.png"))  
-canvas.create_image(20, 20, anchor=NW, image=img)  
-root.mainloop() 
-'''
-
 ############
 #classes
 ############
@@ -274,9 +263,9 @@ class Level1Background(object):
     
     def drawBackground1(self, canvas):
         #stage
-        canvas.create_rectangle(200,140,400,240, fill=self.fill2, width=4)
-        canvas.create_rectangle(220,150,380,230, fill=self.fill3, width=4)
-        canvas.create_rectangle(240,160,360,220, fill=self.fill4, width=4)
+        canvas.create_rectangle(200,140,400,240, fill=self.fill2, width=0)
+        canvas.create_rectangle(220,150,380,230, fill=self.fill3, width=0)
+        canvas.create_rectangle(240,160,360,220, fill=self.fill4, width=0)
         canvas.create_line(280,180,280,205, width=5)
         canvas.create_line(277,180,311,170, width=8)
         canvas.create_line(308,170,308,200, width=5)
@@ -284,7 +273,8 @@ class Level1Background(object):
         canvas.create_oval(303,195,313,205,fill="black")
         
         #exit
-        canvas.create_rectangle(0, 0, 33, 70, fill=self.fill1, width=4)
+        canvas.create_rectangle(0, 0, 33, 70, fill=self.fill1, width=4, 
+        outline="gray34")
         canvas.create_text(16, 35, text="EXIT", fill="red", font="Arial 15 bold") 
                
 ####################################
@@ -400,7 +390,7 @@ def reportResultRedrawAll(canvas, data):
         font="Arial 26", fill=fill3)
     else:
         canvas.create_text(300,145, text="You've only infected " +
-        str(round((data.finalInfectedPeople/30)*100)) +" % of the people :(",
+        str(round((data.finalInfectedPeople/30)*100)) +"% of the people :(",
         font="Arial 26", fill=fill3)
     
     canvas.create_text(300, 185, text="Your score is " + str(data.totalScore),
@@ -417,7 +407,7 @@ def reportResultRedrawAll(canvas, data):
 ####################################
 
 def goal1MousePressed(event, data):
-    if event.x > 200 and event.x < 400 and event.y < 420 and event.y > 380:
+    if event.x > 200 and event.x < 400 and event.y < 400 and event.y > 350:
         data.mode = "playGame"
 
 def goal1KeyPressed(event, data):
@@ -427,24 +417,25 @@ def goal1TimerFired(data):
     pass
 
 def goal1RedrawAll(canvas, data):
-    canvas.create_rectangle(0,0,600,500,outline="black", fill="salmon2", 
+    fill1 = "springGreen4"
+    canvas.create_rectangle(0,0,600,500,outline="black", fill="PeachPuff2", 
     width=2)
-    canvas.create_rectangle(100,200,500,350,fill="gray90")
-    canvas.create_text(300,250,text="Your goal is to infect 50% of the",font=
-    "Arial 26")
-    canvas.create_text(300,300,text=" of the people at the concert",
-    font="Arial 26")
-    canvas.create_rectangle(200,380,400,420,fill="gray90")
-    canvas.create_text(300,400,text="Continue",font="Arial 26")
+    canvas.create_rectangle(100,150,500,300,fill="gray90", outline=fill1)
+    canvas.create_text(300,200,text="Your goal is to infect 50% of the",font=
+    "Arial 26", fill=fill1)
+    canvas.create_text(300,250,text=" of the people at the concert",
+    font="Arial 26", fill=fill1)
+    canvas.create_rectangle(200,350,400,400,fill="gray90",outline=fill1)
+    canvas.create_text(300,375,text="Continue",font="Arial 26", fill=fill1)
 
 ####################################
 # homeScreen mode
 ####################################
 
 def homeScreenMousePressed(event, data):
-    if event.x > 250 and event.x < 350 and event.y < 320 and event.y > 270:
+    if event.x > 250 and event.x < 350 and event.y < 250 and event.y > 210:
         data.mode = "goal1"
-    elif event.x > 250 and event.x < 350 and event.y < 400 and event.y > 350:
+    elif event.x > 250 and event.x < 350 and event.y < 300 and event.y > 260:
         data.mode = "help"
 
 def homeScreenKeyPressed(event, data):
@@ -454,35 +445,71 @@ def homeScreenTimerFired(data):
     pass
 
 def homeScreenRedrawAll(canvas, data):
-    canvas.create_rectangle(0, 0, data.width, data.height, fill="green4")
-    canvas.create_rectangle(200,150,400,250,fill="green3", width=0)
-    canvas.create_text(300, 205,text="Just Sneeeze", font="Arial 26 bold")
-    canvas.create_text(data.width/2, data.height/2+50,
-                        text="Play Game", font="Arial 22 bold" )
-    canvas.create_text(data.width/2, data.height/2+100,
-                        text="Instructions", font="Arial 22 bold" )
+    fill4 = "green yellow"
+    fill5 = "green"
+    
+    canvas.create_rectangle(0, 0, data.width, data.height, fill="cornsilk4")
+    canvas.create_rectangle(85,77,515,425, width=0, fill="cornsilk3")
+    canvas.create_rectangle(150,125,450,375, width=0, fill="cornsilk2")
+    canvas.create_rectangle(220,180,380,330, width=0, fill="ivory2")
+    canvas.create_text(300, 45,text="Just Sneeeze", font="Arial 43",
+    fill=fill4)
+    canvas.create_text(300, 100,text="Just Sneeeze", font="Arial 30 ",
+    fill=fill4)
+    canvas.create_text(300, 150,text="Just Sneeeze", font="Arial 20 ",
+    fill=fill4)
+    canvas.create_text(300, 230, text="Play Game", font="Arial 22 ",
+    fill=fill5)
+    canvas.create_text(300, 280, text="Instructions", font="Arial 22 ",
+    fill=fill5)
 
 ####################################
 # help mode
 ####################################
 
 def helpMousePressed(event, data):
-    pass
+    if event.x > 250 and event.x < 350 and event.y < 250 and event.y > 210:
+        data.mode = "playGame"
 
 def helpKeyPressed(event, data):
-    data.mode = "playGame"
+    pass
 
 def helpTimerFired(data):
     pass
 
 def helpRedrawAll(canvas, data):
     #REMEMBER TO SAY THAT PEOPLE WILL BE EXITING SO U CANT TAKE FOREVER TO MOVE MAIN PERSON
-    canvas.create_text(data.width/2, data.height/2-40,
-                       text="This is help mode!", font="Arial 26 bold")
-    canvas.create_text(data.width/2, data.height/2-10,
-                       text="How to play:", font="Arial 20")
-    canvas.create_text(data.width/2, data.height/2+40,
-                       text="Press any key to keep playing!", font="Arial 20")
+    canvas.create_rectangle(0,0,data.width,data.height, fill="cornsilk4")
+    canvas.create_text(90,25, text="Just Sneeeze", fill="green yellow", 
+    font="Arial 26")
+    canvas.create_rectangle(50,50,550,460, fill="cornsilk2")
+    canvas.create_line(300,50,300,460, width=0.5)
+    #left side
+    canvas.create_text(74,64, text="Goal:", font="Arial 16 bold")
+    canvas.create_text(170,83, text="You are an evil person carrying a")
+    canvas.create_text(178,97, text="deadly virus, and you plan to infect")
+    canvas.create_text(179,111, text="as many people as possible at a      ")
+    canvas.create_text(92,125, text="concert.")
+    
+    canvas.create_text(89,150, text="Controls:", font="Arial 16 bold")
+    canvas.create_text(170,168, text="You may only sneeze ONCE!")
+    canvas.create_text(170,182, text="Control the movement of your")
+    canvas.create_text(172,196, text="person with ARROW KEYS.")
+    canvas.create_text(170,218, text="Press SPACE to sneeze.")
+    canvas.create_rectangle(84,228,272,258, fill="cornsilk3", width=0)
+    canvas.create_text(170,243, text="Space", fill="dim gray")
+    
+    canvas.create_text(88,280, text="Scoring:", font="Arial 16 bold")
+    canvas.create_text(178,298, text="Choose where you sneeze carefully.")
+    canvas.create_text(172,312, text="You want to maxmize the affected")
+    canvas.create_text(100,326, text="population.")
+    canvas.create_text(168,350, text="Factors that you might consider:")
+    canvas.create_text(170,
+    canvas.create_text(
+    canvas.create_text(
+    canvas.create_text(
+    #right side
+    
 
 ####################################
 # playGame LEVEL1 mode
