@@ -33,7 +33,7 @@ class People(object):
         
         self.timer = random.randint(5, 15)
         #will have scores 10, 15 in higher levels
-        self.score = random.choice([25,50,75,100])
+        self.score = 15
         self.dx = random.choice([-1, 1])
         self.dy = random.choice([-1, 1])
         
@@ -43,14 +43,14 @@ class People(object):
     
     #arm status1
     def draw(self, canvas):
+        canvas.create_oval(self.cx-self.r, self.cy-self.r, self.cx+self.r,
+        self.cy+self.r, fill=self.fill, width=0)
+        
         upperArm = lowerArm = 5
         dist = 2
         dist2 = 3
         dist3 = 7
         if self.armStatus == 0:
-            canvas.create_oval(self.cx-self.r, self.cy-self.r, self.cx+self.r,
-            self.cy+self.r, fill=self.fill, width=0)
-            
             canvas.create_polygon(self.cx+self.r-dist, self.cy-upperArm, self.cx+
             self.r-dist, self.cy+lowerArm, self.cx+self.r+dist2, self.cy-dist3,
             fill=self.fill) 
@@ -59,9 +59,6 @@ class People(object):
             fill=self.fill) 
         
         elif self.armStatus == 1:
-            canvas.create_oval(self.cx-self.r, self.cy-self.r, self.cx+self.r,
-            self.cy+self.r, fill=self.fill, width=0)
-   
             canvas.create_polygon(self.cx+self.r-dist, self.cy-upperArm, self.cx+
             self.r-dist, self.cy+lowerArm, self.cx+self.r+dist2, self.cy+dist3,
             fill=self.fill) 
@@ -70,8 +67,12 @@ class People(object):
             fill=self.fill)  
     
     def drawScore(self, canvas):
-        canvas.create_text(self.cx, self.cy-13, text=str(self.score), font = 
-        "Arial 10")
+        canvas.create_text(self.cx, self.cy-13, text=str(self.score), 
+        font = "Arial 10")
+        if self.fill == "red":
+            self.score = 10
+        elif self.fill == "yellow":
+            self.score = 5
     
     def move(self, data):
         #varying speeds for different ages
@@ -97,8 +98,7 @@ class People(object):
         self.cx += self.dx
         self.cy += self.dy 
         if self.cx+self.r < 30 and self.cy+self.r < 60:
-            self.dx = 0
-            self.dy = 0
+            self.dx = self.dy = 0
         if self.cx+self.r >= data.width:
             self.cx -= self.r
             self.dx = -self.dx
@@ -128,17 +128,8 @@ class People(object):
  
     def changeColor(self, data):
         if self.fill == "green": return
-        if self.score == 75:
-            self.fill = "pale green"
-        elif self.score == 50:
-            self.fill = "green yellow"
-        elif self.score == 25:
-            self.fill = "medium sea green"
-        elif self.score == 0:
-            self.fill = "green"
-        self.inGreenZone = True
+        self.fill = "green"
         data.infectedPeople += 1
-        print(data.infectedPeople)
     
     def infectedSneeze(self):
         SneezeClass = Sneeze(-5,-5,(0,0))
@@ -179,7 +170,6 @@ class MainPerson(object):
     def drawMain(self, canvas):
         canvas.create_oval(self.mx-self.mr, self.my-self.mr, self.mx+self.mr,
          self.my+self.mr, fill="black")
-        #flip factor 
         
         #arm status0
         upperArm = lowerArm = 4
@@ -224,7 +214,7 @@ class MainPerson(object):
              self.mx+self.mr-dist, self.my+lowerArm, self.mx+self.mr+dist2,
               self.my+dist3, fill="black") 
             
-    #do math to figure out range sneeze should go in depending dir      
+    #do math to figure out range sneeze should go in depending direction     
     def sneeze(self):
         SneezeClass = Sneeze(-5,-5,(0,0))
           
@@ -295,20 +285,7 @@ class Level1Background(object):
         
         #exit
         canvas.create_rectangle(0, 0, 33, 70, fill=self.fill1, width=4)
-        canvas.create_text(16, 35, text="EXIT", fill="red", font="Arial 15 bold")
-
-class ReportLose(object):
-    def __init__(self):
-        self.fill1 = "yellow"
-        self.fill2 = "light goldenrod" 
-    
-    def draw(self, canvas):
-        canvas.create_rectangle(0,0,600,500,fill=self.fill1,width=0)
-        canvas.create_rectangle(200,250,400,310,fill=self.fill2,width=0)
-        canvas.create_text(100,300, text="you've' infected"+data.finalInfectedPeople +" % of the people before time ran out")
-        canvas.create_rectangle(200,320,400,380,fill=self.fill2,width=0)
-        canvas.create_text(300,280, text="Try Again", font="Arial 20")
-        canvas.create_text(300, 350, text="Quit", font="Arial 20") 
+        canvas.create_text(16, 35, text="EXIT", fill="red", font="Arial 15 bold") 
                
 ####################################
 #customize these functions
@@ -327,12 +304,13 @@ def init(data):
     
     data.mode = "homeScreen"
     data.spacePressed = 0
-    data.countDownLevel1 = 20
+    data.countDownLevel1 = 25
     data.timerr = 0
     data.isGameOver = False
     
     data.infectedPeople = 0
     data.finalInfectedPeople = 0
+    data.totalScore = 0
     
 def mousePressed(event, data):
     if (data.mode == "homeScreen"): 
@@ -342,7 +320,11 @@ def mousePressed(event, data):
     elif (data.mode == "help"): 
         helpMousePressed(event, data)
     elif (data.mode == "goal1"): 
-        goal1MousePressed(event, data)    
+        goal1MousePressed(event, data)  
+    elif (data.mode == "reportResult"): 
+        reportResultMousePressed(event, data) 
+    elif (data.mode == "scoreBoard"): 
+        scoreBoardMousePressed(event, data)
 
 def keyPressed(event, data):
     #turning pages
@@ -354,6 +336,10 @@ def keyPressed(event, data):
         helpKeyPressed(event, data)
     elif (data.mode == "goal1"): 
         goal1KeyPressed(event, data)
+    elif (data.mode == "reportResult"): 
+        reportResultKeyPressed(event, data)
+    elif (data.mode == "scoreBoard"): 
+        scoreBoardKeyPressed(event, data)
 
 def timerFired(data):
     #turning pages
@@ -365,6 +351,10 @@ def timerFired(data):
         helpTimerFired(data)
     elif (data.mode == "goal1"): 
         goal1TimerFired(data)
+    elif (data.mode == "reportResult"): 
+        reportResultTimerFired(data)
+    elif (data.mode == "scoreBoard"): 
+        scoreBoardTimerFired(data)
     
 def redrawAll(canvas, data):
     #turning pages
@@ -376,38 +366,52 @@ def redrawAll(canvas, data):
         helpRedrawAll(canvas, data)
     elif (data.mode == "goal1"): 
         goal1RedrawAll(canvas, data)
+    elif (data.mode == "reportResult"): 
+        reportResultRedrawAll(canvas, data)
+    elif (data.mode == "scoreBoard"): 
+        scoreBoardRedrawAll(canvas, data)
 
 ####################################
 # reportResult mode
 ####################################
-def reportLoseMousePressed(event, data):
-    if event.x > 200 and event.x < 400 and event.y < 420 and event.y > 380:
+def reportResultMousePressed(event, data):
+    if event.x > 200 and event.x < 400 and event.y < 310 and event.y > 250:
         data.mode = "playGame"
+    elif event.x > 200 and event.x < 400 and event.y < 380 and event.y > 320:
+        data.mode = "homeScreen"
+    #elif event.x > 200 and event.x < 400 and event.y < 450 and event.y > 390
+        #data.mode = "scoreBoard"
 
-def reportLoseKeyPressed(event, data):
+def reportResultKeyPressed(event, data):
     pass
 
-def reportLoseTimerFired(data):
+def reportResultTimerFired(data):
     pass
 
-def reportLoseRedrawAll(canvas, data): 
-    self.fill1 = "yellow"
-    self.fill2 = "light goldenrod" 
+def reportResultRedrawAll(canvas, data): 
+    fill1 = "yellow"
+    fill2 = "light goldenrod" 
+    fill3 = "springGreen4"
     
-    canvas.create_rectangle(0,0,600,500,fill=self.fill1,width=0)
-    canvas.create_rectangle(200,250,400,310,fill=self.fill2,width=0)
-    #canvas.create_text("you infected # people before time ran out)
-    canvas.create_rectangle(200,320,400,380,fill=self.fill2,width=0)
+    canvas.create_rectangle(0,0,600,500, fill=fill1, width=0)
+    if (data.finalInfectedPeople/30)*100 > 50:
+        canvas.create_text(300,145, text="You've infected " +
+        str(round((data.finalInfectedPeople/30)*100)) + " % of the people! :)", 
+        font="Arial 26", fill=fill3)
+    else:
+        canvas.create_text(300,145, text="You've only infected " +
+        str(round((data.finalInfectedPeople/30)*100)) +" % of the people :(",
+        font="Arial 26", fill=fill3)
+    
+    canvas.create_text(300, 185, text="Your score is " + str(data.totalScore),
+    font="Arial 26", fill=fill3)
+    canvas.create_rectangle(200,250,400,310, fill=fill3, width=0)
     canvas.create_text(300,280, text="Try Again", font="Arial 20")
-    canvas.create_text(300, 350, text="Quit", font="Arial 20")
-    '''
-        if data.infectedPeople/30 < 70:
-            canvas.create_text()
-        else:
-            canvas.create_text(text="Play Again")
-            canvas_create_text(text="Next Level")
-        canvas.create_text(text="Quit")
-    '''     
+    canvas.create_rectangle(200,320,400,380, fill=fill3, width=0)
+    canvas.create_text(300,350, text="Quit", font="Arial 20")
+    canvas.create_rectangle(200,390,400,450, fill=fill3, width=0)
+    canvas.create_text(300,420, text="High Score Board", font="Arial 20")
+ 
 ####################################
 # goal1 mode
 ####################################
@@ -425,12 +429,12 @@ def goal1TimerFired(data):
 def goal1RedrawAll(canvas, data):
     canvas.create_rectangle(0,0,600,500,outline="black", fill="salmon2", 
     width=2)
-    canvas.create_rectangle(100,200,500,350,fill="gray90", stipple="gray50")
-    canvas.create_text(300,250,text="Your goal is to infect 40% of the",font=
+    canvas.create_rectangle(100,200,500,350,fill="gray90")
+    canvas.create_text(300,250,text="Your goal is to infect 50% of the",font=
     "Arial 26")
     canvas.create_text(300,300,text=" of the people at the concert",
     font="Arial 26")
-    canvas.create_rectangle(200,380,400,420,fill="gray90",stipple="gray50")
+    canvas.create_rectangle(200,380,400,420,fill="gray90")
     canvas.create_text(300,400,text="Continue",font="Arial 26")
 
 ####################################
@@ -451,12 +455,12 @@ def homeScreenTimerFired(data):
 
 def homeScreenRedrawAll(canvas, data):
     canvas.create_rectangle(0, 0, data.width, data.height, fill="green4")
-    canvas.create_text(data.width/2, data.height/2-60,
-                       text="Just Sneeze (will import graphics and gradient)", font="Arial 26 bold")
+    canvas.create_rectangle(200,150,400,250,fill="green3", width=0)
+    canvas.create_text(300, 205,text="Just Sneeeze", font="Arial 26 bold")
     canvas.create_text(data.width/2, data.height/2+50,
                         text="Play Game", font="Arial 22 bold" )
     canvas.create_text(data.width/2, data.height/2+100,
-                        text="Help", font="Arial 22 bold" )
+                        text="Instructions", font="Arial 22 bold" )
 
 ####################################
 # help mode
@@ -523,22 +527,23 @@ def playGameTimerFired(data):
         if data.countDownLevel1 == 0:
             data.isGameOver == True
             data.finalInfectedPeople = data.infectedPeople
+            data.mode = "reportResult"
     
     #changing arms
     for person in data.people:
         #changing arms (purple young walk fastest, red middle, yellow slowest)
         if person.fill == "purple":
-            if data.timerr%8==0 :
+            if data.timerr%3==0 :
                 person.armStatus+=1
                 person.armStatus=person.armStatus%2
         
         if person.fill == "red":
-            if data.timerr%13==0:
+            if data.timerr%7==0:
                 person.armStatus+=1
                 person.armStatus=person.armStatus%2
         
         if person.fill == "yellow":
-            if data.timerr%19==0:
+            if data.timerr%13==0:
                 person.armStatus+=1
                 person.armStatus=person.armStatus%2
 
@@ -554,26 +559,22 @@ def playGameTimerFired(data):
         #checking people-sneeze collision
         for sneeze in data.mainPerson.sneezes:
             if person.collidesWithSneeze(sneeze):
-                if person.score == 25:
-                    person.score = 0
-                    person.changeColor(data)
-                    person.isInfected = True
-                    person.infectedSneeze() #must call the infected func
-                elif person.score != 0:
-                    person.score -= 25
+                data.totalScore += person.score
+                person.score = 0
+                person.changeColor(data)
+                person.isInfected = True
+                person.infectedSneeze() #must call the infected func
            
         #checking people-trail collision
         for sneeze in data.mainPerson.sneezes:
             for moreSneeze in sneeze.prevLocation:
                 x, y, r = moreSneeze
                 if person.collidesWithTrail(x,y,r):
-                    if person.score == 25:
-                        person.score = 0
-                        person.changeColor(data)
-                        person.isInfected = True
-                        person.infectedSneeze()
-                    elif person.score != 0:
-                        person.score -= 25
+                    data.totalScore += person.score
+                    person.score = 0
+                    person.changeColor(data)
+                    person.isInfected = True
+                    person.infectedSneeze()
         
     #main person sneeze   
     for sneeze in data.mainPerson.sneezes:
@@ -597,25 +598,22 @@ def playGameTimerFired(data):
         for sneeze in person.infectedSneezes:
             for rest in data.people:  
                 if rest.collidesWithSneeze(sneeze):
-                    if rest.score == 25:
-                        rest.score = 0
-                        rest.changeColor(data)
-                        rest.isInfected = True
-                        rest.infectedSneeze() #must call the infected func
-                    elif rest.score != 0:
-                        rest.score -= 25
+                    data.totalScore += person.score
+                    rest.score = 0
+                    rest.changeColor(data)
+                    rest.isInfected = True
+                    rest.infectedSneeze() #must call the infected func
+
                         
     #checking other people collsion with random sneeze trail
                 for moreSneeze in sneeze.prevLocation:
                     x, y, r = moreSneeze
                     if rest.collidesWithTrail(x,y,r):
-                        if rest.score == 25:
-                            rest.score = 0
-                            rest.changeColor(data)
-                            rest.isInfected = True
-                            rest.infectedSneeze()
-                        elif rest.score != 0:
-                            rest.score -= 25
+                        data.totalScore += person.score
+                        rest.score = 0
+                        rest.changeColor(data)
+                        rest.isInfected = True
+                        rest.infectedSneeze()
                         
             if sneeze.velocity <= 0:
                 continue
@@ -655,9 +653,8 @@ def playGameRedrawAll(canvas, data):
     canvas.create_text(440, 480, text="Infected Percentage: " +
      str(round((data.infectedPeople/30)*100)) + "%", font="Arial 26 bold", fill=
      "green")
-    
-    if data.countDownLevel1 == 0:
-        ReportLose().draw(canvas)
+    canvas.create_text(60, 480, text="Score: "+str(data.totalScore), font=
+    "Arial 20")
         
 ####################################
 # use the run function as-is
