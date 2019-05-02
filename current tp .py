@@ -6,10 +6,11 @@ def distance(x1, y1, x2, y2):
     return ((x2-x1)**2+(y2-y1)**2)**(1/2)
 
 def isInsideStage(x, y, r):
-    return (x+r<=401 and x-r>=199 and y+r<=241 and y-r>=139) 
+    return (x+r>=200 and x-r<=400 and y+r>=140 and y-r<=240) 
 
 def isInsideRealm(x, y, r):
-    return (x+r<=420 and x-r>=190 and y+r<=260 and y-r>=120) 
+    return ((x+r>=185 and x-r<=415 and y+r>=140 and y-r<=240) 
+    or (x+r>=200 and x-r<=400 and y+r>=125 and y-r<=255))
         
 ############
 #classes
@@ -74,26 +75,26 @@ class People(object):
         #varying speeds for different ages
         if self.fill == "purple":
             if self.dx == -1:
-                self.dx -= 3.5
+                self.dx -= 3.6
             elif self.dx == 1:
-                self.dx += 3.5
+                self.dx += 3.6
             if self.dy == -1:
-                self.dy -= 3.5
+                self.dy -= 3.6
             elif self.dy == 1:
-                self.dy += 3.5
+                self.dy += 3.6
         elif self.fill == "red":
             if self.dx == -1:
-                self.dx -= -1.7
+                self.dx -= -1.9
             elif self.dx == 1:
-                self.dx += 1.7
+                self.dx += 1.9
             if self.dy == -1:
-                self.dy -= 1.7
+                self.dy -= 1.9
             elif self.dy == 1:
-                self.dy += 1.7
+                self.dy += 1.9
                 
         self.cx += self.dx
         self.cy += self.dy 
-        if self.cx+self.r < 30 and self.cy+self.r < 60:
+        if self.cx+self.r < 33 and self.cy+self.r < 70:
             self.dx = self.dy = 0
         if self.cx+self.r >= data.width:
             self.cx -= self.r
@@ -137,9 +138,7 @@ class People(object):
             self.infectedSneezes.append(Sneeze(self.cx,self.cy,(dx,dy)))
             self.sneezed = True                    
  
-           
-    
-    
+ 
 class MainPerson(object):
     def __init__(self, data):
         self.sneezes = []
@@ -221,6 +220,11 @@ class MainPerson(object):
             yDir = -math.sin(rightAngle)*SneezeClass.velocity
         
         self.sneezes.append(Sneeze(self.mx,self.my,(xDir,yDir)))
+    
+    def collidesWithMain(self, other, data):
+        people = People(data)
+        return (distance(other.cx, other.cy, self.mx, self.my) <= self.mr +
+        other.r)
 
 #actually draw the sneeze based on changing direction and time    
 class Sneeze(object):
@@ -264,7 +268,8 @@ class Level1Background(object):
         canvas.create_line(308,170,308,200, width=5)
         canvas.create_oval(275,200,285,210,fill="black")
         canvas.create_oval(303,195,313,205,fill="black")
-        
+    
+    def drawBackground2(self, canvas):
         #exit
         canvas.create_rectangle(0,0,33,70, fill=self.fill1, width=4, 
         outline="gray34")
@@ -299,7 +304,9 @@ def init(data):
     
     data.infectedPeople = 0
     data.finalInfectedPeople = 0
+
     data.totalScore = 0
+    data.highestScore = 0
     
 def mousePressed(event, data):
     if (data.mode == "homeScreen"): 
@@ -359,17 +366,48 @@ def redrawAll(canvas, data):
         reportResultRedrawAll(canvas, data)
     elif (data.mode == "scoreBoard"): 
         scoreBoardRedrawAll(canvas, data)
+        
+####################################
+# scoreBoard mode
+####################################
 
+def scoreBoardMousePressed(event, data):
+    pass
+
+def scoreBoardKeyPressed(event, data):
+    contentsToWrite = data.totalScore
+    writeFile("score.txt", contentsToWrite)
+
+def scoreBoardTimerFired(data):
+    pass
+
+def scoreBoardRedrawAll(canvas, data):
+    canvas.create_rectangle(0,0,data.width,data.height,fill="yellow")
+    canvas.create_text(300,200,text="Highest Score:", font='Arial 40')
+    canvas.create_text(300,250,text="60", font='Arial 40')
+   # if data.totalScore > data.highestScore:
+     #   data.highestScore = data.totalScore
+    #canvas.create_text()
+    
+
+#from 112 coursenotes
+def readFile(path):
+    with open(path, "rt") as f:
+        return f.read()
+
+def writeFile(path, contents):
+    with open(path, "wt") as f:
+        f.write(contents)
+
+#contentsToWrite = data.totalScore
+#writeFile("score.txt", contentsToWrite)
+        
 ####################################
 # reportResult mode
 ####################################
 def reportResultMousePressed(event, data):
     if event.x > 200 and event.x < 400 and event.y < 310 and event.y > 250:
-        data.mode = "playGame"
-    elif event.x > 200 and event.x < 400 and event.y < 380 and event.y > 320:
-        data.mode = "homeScreen"
-    #elif event.x > 200 and event.x < 400 and event.y < 450 and event.y > 390
-        #data.mode = "scoreBoard"
+        data.mode = "scoreBoard"
 
 def reportResultKeyPressed(event, data):
     pass
@@ -395,11 +433,8 @@ def reportResultRedrawAll(canvas, data):
     canvas.create_text(300, 185, text="Your score is " + str(data.totalScore),
     font="Arial 26", fill=fill3)
     canvas.create_rectangle(200,250,400,310, fill=fill3, width=0)
-    canvas.create_text(300,280, text="Try Again", font="Arial 20")
-    canvas.create_rectangle(200,320,400,380, fill=fill3, width=0)
-    canvas.create_text(300,350, text="Quit", font="Arial 20")
-    canvas.create_rectangle(200,390,400,450, fill=fill3, width=0)
-    canvas.create_text(300,420, text="High Score Board", font="Arial 20")
+    canvas.create_text(300,280, text="Highest Score", font="Arial 20")
+ 
  
 ####################################
 # goal1 mode
@@ -417,7 +452,7 @@ def goal1TimerFired(data):
 
 def goal1RedrawAll(canvas, data):
     fill1 = "springGreen4"
-    canvas.create_rectangle(0,0,600,500,outline="black", fill="PeachPuff2", 
+    canvas.create_rectangle(0,0,600,500,outline="black", fill="dark salmon", 
     width=2)
     canvas.create_rectangle(100,150,500,300,fill="gray90", outline=fill1)
     canvas.create_text(300,200,text="Your goal is to infect 70% of the",font=
@@ -477,7 +512,7 @@ def helpTimerFired(data):
     pass
 
 def helpRedrawAll(canvas, data):
-    #REMEMBER TO SAY THAT PEOPLE WILL BE EXITING SO U CANT TAKE FOREVER TO MOVE MAIN PERSON
+
     canvas.create_rectangle(0,0,data.width,data.height, fill="cornsilk4")
     canvas.create_text(90,25, text="Just Sneeeze", fill="green yellow", 
     font="Arial 26")
@@ -604,7 +639,13 @@ def playGameTimerFired(data):
         if (isInsideRealm(person.cx, person.cy, person.r) and not isInsideStage(
         person.cx, person.cy, person.r)):
             person.dx = person.dy = 0.1
-    
+        
+        #check main person and random people collision
+        if MainPerson(data).collidesWithMain(person, data):
+            person.cx -= person.r 
+            person.cy -= person.r
+            person.dx = -person.dx 
+
     data.timerr += 1
     if data.timerr%10 == 0 and data.countDownLevel1 != 0:
         data.countDownLevel1 -= 1
@@ -615,21 +656,22 @@ def playGameTimerFired(data):
     
     #changing arms
     for person in data.people:
+        if not isInsideRealm(person.cx, person.cy, person.r):
         #changing arms (purple young walk fastest, red middle, yellow slowest)
-        if person.fill == "purple":
-            if data.timerr%2==0 :
-                person.armStatus+=1
-                person.armStatus=person.armStatus%2
-        
-        if person.fill == "red":
-            if data.timerr%5==0:
-                person.armStatus+=1
-                person.armStatus=person.armStatus%2
-        
-        if person.fill == "yellow":
-            if data.timerr%9==0:
-                person.armStatus+=1
-                person.armStatus=person.armStatus%2
+            if person.fill == "purple":
+                if data.timerr%2==0 :
+                    person.armStatus+=1
+                    person.armStatus=person.armStatus%2
+            
+            if person.fill == "red":
+                if data.timerr%5==0:
+                    person.armStatus+=1
+                    person.armStatus=person.armStatus%2
+            
+            if person.fill == "yellow":
+                if data.timerr%9==0:
+                    person.armStatus+=1
+                    person.armStatus=person.armStatus%2
 
     for person in data.people:
         person.move(data)
@@ -711,6 +753,7 @@ def playGameTimerFired(data):
 def playGameRedrawAll(canvas, data):
     #backdrop
     canvas.create_rectangle(0, 0, 600, 500, fill="salmon2")
+    Level1Background().drawBackground1(canvas)
     
     for person in data.people:
         person.drawScore(canvas)
@@ -724,7 +767,7 @@ def playGameRedrawAll(canvas, data):
     data.mainPerson.drawMain(canvas)
     
     #level1
-    Level1Background().drawBackground1(canvas)
+    Level1Background().drawBackground2(canvas)
     canvas.create_text(565, 25, text=data.countDownLevel1, font="Arial 35 bold")
     canvas.create_text(440, 480, text="Infected Percentage: " +
      str(round((data.infectedPeople/30)*100)) + "%", font="Arial 26 bold", fill=
