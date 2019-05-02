@@ -4,10 +4,13 @@ from tkinter import *
 
 def distance(x1, y1, x2, y2):
     return ((x2-x1)**2+(y2-y1)**2)**(1/2)
+
+def isInsideStage(x, y, r):
+    return (x+r<=400 and x-r>=200 and y+r<=240 and y-r>=140) 
+
+def isInsideRealm(x, y, r):
+    return (x+r<=450 and x-r>=150 and y+r<=290 and y-r>=90) 
         
-############
-#importing background images
-############ 
 ############
 #classes
 ############
@@ -32,6 +35,10 @@ class People(object):
     
     #arm status1
     def draw(self, canvas):
+        if isInsideStage(self.cx, self.cy, self.r):
+            #people entering
+            self.cx = 10
+            self.cy = 480
         canvas.create_oval(self.cx-self.r, self.cy-self.r, self.cx+self.r,
         self.cy+self.r, fill=self.fill, width=0)
         
@@ -130,22 +137,8 @@ class People(object):
             self.infectedSneezes.append(Sneeze(self.cx,self.cy,(dx,dy)))
             self.sneezed = True                    
  
-#200,140,400,240   
-    def collideWithStageTop(self, x, y, r):
-        return (self.cx+self.r > 200 and self.cx+self.r < 400 and self.cy+self.r
-        > 40)
-            
-    def collideWithStageBottom(self, x, y, r):
-        return (self.cx+self.r > 200 and self.cx+self.r < 400 and self.cy+self.r < 
-        140 and self.cy+self.r > 40)
-            
-    def collideWithStageTop(self, x, y, r):
-        return (self.cx+self.r > 200 and self.cx+self.r < 400 and self.cy+self.r < 
-        140 and self.cy+self.r > 40)
-            
-    def collideWithStageTop(self, x, y, r):
-        return (self.cx+self.r > 200 and self.cx+self.r < 400 and self.cy+self.r < 
-        140 and self.cy+self.r > 40)              
+           
+    
     
 class MainPerson(object):
     def __init__(self, data):
@@ -273,9 +266,15 @@ class Level1Background(object):
         canvas.create_oval(303,195,313,205,fill="black")
         
         #exit
-        canvas.create_rectangle(0, 0, 33, 70, fill=self.fill1, width=4, 
+        canvas.create_rectangle(0,0,33,70, fill=self.fill1, width=4, 
         outline="gray34")
-        canvas.create_text(16, 35, text="EXIT", fill="red", font="Arial 15 bold") 
+        canvas.create_text(16,35, text="EXIT", fill="red", font="Arial 15 bold")
+        
+        #entrance
+        canvas.create_rectangle(0,420,40,500, fill=self.fill1, width=4,
+        outline="gray34") 
+        canvas.create_text(20,445, text="EN", fill="red", font="Arial 14 bold")
+        canvas.create_text(20,460, text="TER", fill="red", font="Arial 14 bold")
                
 ####################################
 #customize these functions
@@ -468,7 +467,7 @@ def homeScreenRedrawAll(canvas, data):
 ####################################
 
 def helpMousePressed(event, data):
-    if event.x > 250 and event.x < 350 and event.y < 250 and event.y > 210:
+    if event.x > 430 and event.x < 530 and event.y < 450 and event.y > 414:
         data.mode = "playGame"
 
 def helpKeyPressed(event, data):
@@ -612,29 +611,22 @@ def playGameTimerFired(data):
     for person in data.people:
         #changing arms (purple young walk fastest, red middle, yellow slowest)
         if person.fill == "purple":
-            if data.timerr%3==0 :
+            if data.timerr%2==0 :
                 person.armStatus+=1
                 person.armStatus=person.armStatus%2
         
         if person.fill == "red":
-            if data.timerr%7==0:
+            if data.timerr%5==0:
                 person.armStatus+=1
                 person.armStatus=person.armStatus%2
         
         if person.fill == "yellow":
-            if data.timerr%13==0:
+            if data.timerr%9==0:
                 person.armStatus+=1
                 person.armStatus=person.armStatus%2
 
     for person in data.people:
         person.move(data)
-        '''
-        #collision with stage
-        if collideWithStageTop(people.cx,people.cy,people.r):
-        elif collideWithStageTop(people.cx,people.cy,people.r):
-        elif collideWithStageTop(people.cx,people.cy,people.r):
-        elif collideWithStageTop(people.cx,people.cy,people.r):
-        '''    
         #checking people-sneeze collision
         for sneeze in data.mainPerson.sneezes:
             if person.collidesWithSneeze(sneeze):
@@ -682,7 +674,6 @@ def playGameTimerFired(data):
                     rest.changeColor(data)
                     rest.isInfected = True
                     rest.infectedSneeze() #must call the infected func
-
                         
     #checking other people collsion with random sneeze trail
                 for moreSneeze in sneeze.prevLocation:
@@ -732,8 +723,8 @@ def playGameRedrawAll(canvas, data):
     canvas.create_text(440, 480, text="Infected Percentage: " +
      str(round((data.infectedPeople/30)*100)) + "%", font="Arial 26 bold", fill=
      "green")
-    canvas.create_text(60, 480, text="Score: "+str(data.totalScore), font=
-    "Arial 20")
+    canvas.create_text(110, 480, text="Score: "+str(data.totalScore), font=
+    "Arial 26 bold")
         
 ####################################
 # use the run function as-is
